@@ -2,12 +2,10 @@ package dicebot
 
 import (
 	"fmt"
-	"github.com/arkie/hackyslack2"
-	"github.com/arkie/hackyslack2/dicebot/roll"
-	"math/rand"
 	"os"
 	"strconv"
-	"time"
+
+	"github.com/ncwhale/hackyslack2/dicebot/roll"
 )
 
 func init() {
@@ -172,7 +170,6 @@ func formatRoll(name string, mini bool, results []*roll.Dice) hackyslack.D {
 }
 
 func command(args hackyslack.Args) hackyslack.D {
-	rand.Seed(time.Now().UnixNano())
 	mini := len(args.Text) > 4 && args.Text[:4] == "mini"
 	result := roll.Parse(args.Text)
 	for _, roll := range result {
