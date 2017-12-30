@@ -1,10 +1,11 @@
 package dicebot
 
 import (
-	"github.com/arkie/hackyslack2"
 	"html/template"
 	"net/http"
 	"os"
+
+	"github.com/ncwhale/hackyslack2"
 )
 
 var (

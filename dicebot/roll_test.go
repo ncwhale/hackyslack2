@@ -2,9 +2,10 @@ package dicebot
 
 import (
 	"fmt"
-	"github.com/arkie/hackyslack2"
-	"github.com/arkie/hackyslack2/dicebot/roll"
 	"testing"
+
+	"github.com/ncwhale/hackyslack2"
+	"github.com/ncwhale/hackyslack2/dicebot/roll"
 )
 
 var FormatTests = []string{
