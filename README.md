@@ -10,7 +10,7 @@ To use in your own apps:
 - View the included [dicebot](/dicebot) sample app which in turn uses the [hackyslack2/dicebot/roll](/dicebot/roll) dice parsing library.
 - Import the repository.
   
-  ```import "github.com/arkie/hackyslack2"```
+  ```import "github.com/ncwhale/hackyslack2"```
 
 - Configure with the application id and secret from [Slack](https://api.slack.com/applications) ([dicebot/index.go](/dicebot/index.go#L17))
 
