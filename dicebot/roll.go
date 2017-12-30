@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/ncwhale/hackyslack2"
 	"github.com/ncwhale/hackyslack2/dicebot/roll"
 )
 
