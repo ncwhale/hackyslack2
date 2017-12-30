@@ -1,7 +1,8 @@
 package roll
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"regexp"
 	"sort"
 	"strconv"
@@ -129,6 +130,16 @@ func Parse(text string) []*Dice {
 	return rolls
 }
 
+func DiceGenerate(side int) int {
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(side)))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return int(n.Int64() + 1)
+}
+
 func (r *Dice) Roll() {
 	r.Total = 0
 	r.Rolls = []int{}
@@ -138,7 +149,7 @@ func (r *Dice) Roll() {
 	}
 	num := r.Number
 	for i := 0; i < num; i++ {
-		n := rand.Intn(r.Sides) + 1
+		n := DiceGenerate(r.Sides)
 		if r.Fudge {
 			n -= 2
 		}
