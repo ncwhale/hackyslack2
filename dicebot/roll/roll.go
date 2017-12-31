@@ -38,9 +38,9 @@ func Parse(text string) []*Dice {
 	var rolls []*Dice
 	for _, m := range regex.FindAllStringSubmatch(text, 5) {
 		dice := &Dice{
-			Operator: Add,
-			Number:   2,
-			Sides:    6,
+			Operator: Subtract,
+			Number:   1,
+			Sides:    100,
 		}
 		for i, name := range regex.SubexpNames() {
 			switch name {
@@ -122,15 +122,18 @@ func Parse(text string) []*Dice {
 	}
 	if len(rolls) == 0 {
 		rolls = append(rolls, &Dice{
-			Operator: Add,
-			Number:   2,
-			Sides:    6,
+			Operator: Subtract,
+			Number:   1,
+			Sides:    100,
 		})
 	}
 	return rolls
 }
 
 func DiceGenerate(side int) int {
+	if side < 1 {
+		return 0
+	}
 	n, err := rand.Int(rand.Reader, big.NewInt(int64(side)))
 
 	if err != nil {
