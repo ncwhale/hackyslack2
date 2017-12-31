@@ -2,7 +2,6 @@ package dicebot
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/ncwhale/hackyslack2"
@@ -10,11 +9,8 @@ import (
 )
 
 func init() {
-	r := os.Getenv("ROLL_COMMAND")
-	if r == "" {
-		r = "roll"
-	}
-	hackyslack.Register(r, command)
+	hackyslack.Register("r", command)
+	hackyslack.Register("roll", command)
 }
 
 func formatRoll(name string, mini bool, results []*roll.Dice) hackyslack.D {
