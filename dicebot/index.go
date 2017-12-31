@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	clientId     = os.Getenv("SLACK_ID")
+	clientID     = os.Getenv("SLACK_ID")
 	clientSecret = os.Getenv("SLACK_SECRET")
 	templates    = template.Must(template.ParseGlob("template/*.html"))
 )
 
 func init() {
-	hackyslack.Configure(clientId, clientSecret)
+	hackyslack.Configure(clientID, clientSecret)
 
 	http.HandleFunc("/command", hackyslack.Route)
 	http.HandleFunc("/oauth", hackyslack.Oauth)
@@ -42,11 +42,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 			s = "Error Installing"
 		}
 		templates.ExecuteTemplate(w, "index.html", page{
-			Client: clientId,
+			Client: clientID,
 			Status: s,
 		})
 	} else {
-		templates.ExecuteTemplate(w, "index.html", page{Client: clientId})
+		templates.ExecuteTemplate(w, "index.html", page{Client: clientID})
 	}
 }
 
