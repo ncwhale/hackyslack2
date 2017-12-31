@@ -1,8 +1,9 @@
-version: 2
 runtime: go
 api_version: go1
 
 handlers:
+- url: /favicon.ico
+  static_file: static/favicon.ico
 - url: /static
   static_dir: static
 - url: /.*
