@@ -38,7 +38,7 @@ func Parse(text string) []*Dice {
 	var rolls []*Dice
 	for _, m := range regex.FindAllStringSubmatch(text, 5) {
 		dice := &Dice{
-			Operator: Subtract,
+			Operator: Add,
 			Number:   1,
 			Sides:    100,
 		}
@@ -122,7 +122,7 @@ func Parse(text string) []*Dice {
 	}
 	if len(rolls) == 0 {
 		rolls = append(rolls, &Dice{
-			Operator: Subtract,
+			Operator: Add,
 			Number:   1,
 			Sides:    100,
 		})
