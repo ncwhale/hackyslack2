@@ -2,15 +2,18 @@ package hackyslack
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"golang.org/x/oauth2"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
-	"net/http"
-	"time"
 )
 
+// Const values for cookie access.
 const (
+	// Cookie key name.
 	Cookie = "c"
 	Okay   = "Okay"
 	Error  = "Error"
@@ -29,11 +32,14 @@ var (
 	}
 )
 
+// D is the type for JSON struct.
 type D map[string]interface{}
+
+// Args is the Slack command/request struct.
 type Args struct {
-	TeamId      string
+	TeamID      string
 	TeamDomain  string
-	ChannelId   string
+	ChannelID   string
 	ChannelName string
 	UserId      string
 	UserName    string
@@ -43,28 +49,31 @@ type Args struct {
 }
 type Command func(Args) D
 
-// Manually inline oauth2.Token for datastore.
+// TeamToken is manually inline oauth2 Token for datastore.
 type TeamToken struct {
 	AccessToken  string    `json:"access_token"`
 	TokenType    string    `json:"token_type,omitempty"`
 	RefreshToken string    `json:"refresh_token,omitempty"`
 	Expiry       time.Time `json:"expiry,omitempty"`
-	TeamId       string    `json:"team_id,omitempty"`
+	TeamID       string    `json:"team_id,omitempty"`
 	TeamName     string    `json:"team_name,omitempty"`
 	Scope        string    `json:"scope,omitempty"`
 	Created      time.Time `json:"created,omitempty"`
 }
 
-func Configure(clientId string, clientSecret string) {
-	conf.ClientID = clientId
+// Configure takes slack ClientID and ClientSecret
+func Configure(clientID string, clientSecret string) {
+	conf.ClientID = clientID
 	conf.ClientSecret = clientSecret
 }
 
+// Register commands for slack call.
 func Register(name string, cmd Command) {
 	commands["/"+name] = cmd
 }
 
-func writeJson(w http.ResponseWriter, r *http.Request, data D) {
+// writeJSON to http response.
+func writeJSON(w http.ResponseWriter, r *http.Request, data D) {
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		c := appengine.NewContext(r)
@@ -74,11 +83,12 @@ func writeJson(w http.ResponseWriter, r *http.Request, data D) {
 	w.Write(bytes)
 }
 
+// Route for http request process.
 func Route(w http.ResponseWriter, r *http.Request) {
 	args := Args{
-		TeamId:      r.FormValue("team_id"),
+		TeamID:      r.FormValue("team_id"),
 		TeamDomain:  r.FormValue("team_domain"),
-		ChannelId:   r.FormValue("channel_id"),
+		ChannelID:   r.FormValue("channel_id"),
 		ChannelName: r.FormValue("channel_name"),
 		UserId:      r.FormValue("user_id"),
 		UserName:    r.FormValue("user_name"),
@@ -86,16 +96,17 @@ func Route(w http.ResponseWriter, r *http.Request) {
 		Text:        r.FormValue("text"),
 		ResponseUrl: r.FormValue("response_url"),
 	}
-	c := appengine.NewContext(r)
-	log.Infof(c, "Got command %v", args)
+	// c := appengine.NewContext(r)
+	// log.Infof(c, "Got command %v", args)
 	cmd, ok := commands[args.Command]
 	if ok {
-		writeJson(w, r, cmd(args))
+		writeJSON(w, r, cmd(args))
 	} else {
 		w.Write([]byte("Command not found."))
 	}
 }
 
+// Oauth for register bot to slack.
 func Oauth(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query()["code"]
 	if len(code) == 0 {
@@ -118,12 +129,12 @@ func Oauth(w http.ResponseWriter, r *http.Request) {
 		TokenType:    tok.TokenType,
 		RefreshToken: tok.RefreshToken,
 		Expiry:       tok.Expiry,
-		TeamId:       tok.Extra("team_id").(string),
+		TeamID:       tok.Extra("team_id").(string),
 		TeamName:     tok.Extra("team_name").(string),
 		Scope:        tok.Extra("scope").(string),
 		Created:      time.Now(),
 	}
-	key := datastore.NewKey(c, "token", team.TeamId, 0, nil)
+	key := datastore.NewKey(c, "token", team.TeamID, 0, nil)
 	datastore.Put(c, key, &team)
 	http.SetCookie(w, &http.Cookie{
 		Name:  Cookie,
