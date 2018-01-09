@@ -19,6 +19,8 @@ var FormatTests = []string{
 	"10d10k5",
 	"2d6 / 2d6",
 	"mini 2d6 / 2d6",
+	"-1d% Skill=50",
+	"-1d% * 5",
 }
 
 func TestRollFormat(t *testing.T) {
@@ -42,15 +44,23 @@ func TestRollFormat(t *testing.T) {
 				sum /= result.Total
 			}
 			if i == 0 {
-				verify += fmt.Sprint("*", total, "*")
+				if result.Operator == "-" {
+					verify += fmt.Sprint("*-", total, "*")
+				} else {
+					verify += fmt.Sprint("*", total, "*")
+				}
 			} else {
-				verify += fmt.Sprint(" ", result.Operator, " *", total, "*")
+				if result.Operator == "*" {
+					verify += fmt.Sprint(" × *", total, "*")
+				} else {
+					verify += fmt.Sprint(" ", result.Operator, " *", total, "*")
+				}
 			}
 		}
 		if len(rolls) > 1 {
 			verify += fmt.Sprint(" = *", sum, "*")
 		}
-		resp := formatRoll(username, false, rolls)
+		resp := formatRoll(username, rolls)
 		if resp["response_type"] != "in_channel" {
 			t.Error("Incorrect response type", resp["response_type"])
 		}
