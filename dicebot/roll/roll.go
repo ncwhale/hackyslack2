@@ -10,6 +10,7 @@ import (
 
 var regex = regexp.MustCompile(`(?i)(?P<op>[×*/^v+-])?\s*((?P<num>\d{0,3})d(?P<sides>[f%]|\d{1,4})(?P<explode>!)?(?P<max>[<>]\d{1,4})?(?P<keep>k-?\d{1,3})?|(?P<alt>\d{1,5})(?P<fudge>f)?)( for (?P<for>[^,;]+))?`)
 
+// Operators for commands
 const (
 	Add      = "+"
 	Subtract = "-"
@@ -19,6 +20,7 @@ const (
 	Min      = "v"
 )
 
+// Dice is one dice or a number.
 type Dice struct {
 	Operator string
 	Number   int
@@ -34,8 +36,10 @@ type Dice struct {
 	For      string
 }
 
+// Parse text to dices.
 func Parse(text string) []*Dice {
 	var rolls []*Dice
+	var hasOneDice = false
 	for _, m := range regex.FindAllStringSubmatch(text, 5) {
 		dice := &Dice{
 			Operator: Add,
@@ -73,6 +77,7 @@ func Parse(text string) []*Dice {
 				}
 				dice.Number = num
 			case "sides":
+				hasOneDice = true
 				if m[i] == "" {
 					dice.Sides = 6
 				} else if m[i] == "f" || m[i] == "F" {
@@ -120,9 +125,9 @@ func Parse(text string) []*Dice {
 		}
 		rolls = append(rolls, dice)
 	}
-	if len(rolls) == 0 {
+	if !hasOneDice {
 		rolls = append(rolls, &Dice{
-			Operator: Add,
+			Operator: Subtract,
 			Number:   1,
 			Sides:    100,
 		})
