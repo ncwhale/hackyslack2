@@ -1,86 +1,64 @@
 package dicebot
 
 import (
-	"fmt"
+	"encoding/json"
 	"testing"
 
 	"github.com/ncwhale/hackyslack2"
 	"github.com/ncwhale/hackyslack2/dicebot/roll"
 )
 
-var FormatTests = []string{
-	"",
-	"d6",
-	"10d10-5",
-	"123456789d123456789+123456789",
-	"1d1 2d2 3d3",
-	"10d10>5",
-	"10d10<5",
-	"10d10k5",
-	"2d6 / 2d6",
-	"mini 2d6 / 2d6",
-	"-1d% Skill=50",
-	"-1d% * 5",
+var CommandTests = []CommandTest{
+	{
+		"",
+		[]*Block{
+			{
+				false,
+				[]*roll.Dice{{Operator: roll.Add, Number: 1, Sides: 100}}},
+		},
+	},
+	{
+		"mini Skill=50, -1d% + 20 for fire, 100f for fire, 1d%>50, 1d%<50",
+		[]*Block{
+			{
+				false,
+				[]*roll.Dice{{Operator: roll.Add, Number: 1, Sides: 100}}},
+		},
+	},
+	{
+		"-1d% + 2d6 - 1d6 * 1d6 / 2, 10d6k4, 10d6k-4",
+		[]*Block{
+			{
+				false,
+				[]*roll.Dice{{Operator: roll.Add, Number: 1, Sides: 100}}},
+		},
+	},
 }
 
-func TestRollFormat(t *testing.T) {
-	username := "TestUser"
-	for _, test := range FormatTests {
-		rolls := roll.Parse(test)
-		verify := fmt.Sprint("@", username, " rolled ")
-		sum := 0
-		for i, result := range rolls {
-			result.Roll()
-			// Use the last roll as the final.
-			total := result.Total
-			switch result.Operator {
-			case "+":
-				sum += result.Total
-			case "-":
-				sum -= result.Total
-			case "*":
-				sum *= result.Total
-			case "/":
-				sum /= result.Total
-			}
-			if i == 0 {
-				if result.Operator == "-" {
-					verify += fmt.Sprint("*-", total, "*")
-				} else {
-					verify += fmt.Sprint("*", total, "*")
-				}
-			} else {
-				if result.Operator == "*" {
-					verify += fmt.Sprint(" × *", total, "*")
-				} else {
-					verify += fmt.Sprint(" ", result.Operator, " *", total, "*")
-				}
-			}
-		}
-		if len(rolls) > 1 {
-			verify += fmt.Sprint(" = *", sum, "*")
-		}
-		resp := formatRoll(username, rolls)
-		if resp["response_type"] != "in_channel" {
-			t.Error("Incorrect response type", resp["response_type"])
-		}
-		attach := resp["attachments"].([]hackyslack.D)[0]
-		if attach["color"] == "" {
-			t.Error("Missing color")
-		}
-		if attach["text"] != verify {
-			t.Error("Incorrect response text", attach["text"], "instead of", verify)
-		}
-	}
+type CommandTest struct {
+	Text   string
+	Result []*Block
 }
 
 // Test for panics.
 func TestCommand(t *testing.T) {
-	for _, test := range FormatTests {
-		resp := command(hackyslack.Args{
-			Text:     test,
-			UserName: "CommandTest",
-		})
+	for _, test := range CommandTests {
+		args := hackyslack.Args{
+			Text:     test.Text,
+			UserId:   "000L",
+			UserName: "Test",
+		}
+
+		blocks := ParseCommand(args)
+		// TODO: check output blocks.
+		resp := formatBlocks(args, blocks)
+		// TODO: check format output.
+		_, err := json.Marshal(resp)
+
+		if err != nil {
+			t.Error("JSON stringify error:", err)
+		}
+
 		if resp["response_type"] != "in_channel" {
 			t.Error("Incorrect response type", resp["response_type"])
 		}

@@ -24,7 +24,7 @@ func init() {
 	hackyslack.Register("roll", command)
 }
 
-func formatRoll(args hackyslack.Args, results []*Block) hackyslack.D {
+func formatBlocks(args hackyslack.Args, results []*Block) hackyslack.D {
 	var (
 		attachments []hackyslack.D
 	)
@@ -190,7 +190,8 @@ func formatRoll(args hackyslack.Args, results []*Block) hackyslack.D {
 	}
 }
 
-func command(args hackyslack.Args) hackyslack.D {
+// ParseCommand split slack command text to blocks.
+func ParseCommand(args hackyslack.Args) []*Block {
 	var result []*Block
 	for _, m := range blockRegexp.FindAllStringSubmatch(args.Text, 5) {
 		block := &Block{}
@@ -202,6 +203,21 @@ func command(args hackyslack.Args) hackyslack.D {
 				block.dices = roll.Parse(m[i])
 			}
 		}
+
+		result = append(result, block)
 	}
-	return formatRoll(args, result)
+
+	if len(result) == 0 {
+		result = append(result, &Block{
+			mini:  false,
+			dices: roll.Parse(""),
+		})
+	}
+
+	return result
+}
+
+func command(args hackyslack.Args) hackyslack.D {
+	result := ParseCommand(args)
+	return formatBlocks(args, result)
 }
