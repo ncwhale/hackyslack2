@@ -60,6 +60,7 @@ func Parse(text string) []*Dice {
 				if m[i] != "" {
 					dice.Fudge = true
 					dice.Sides = 3
+					hasOneDice = true
 				}
 			case "alt":
 				if m[i] != "" {
@@ -77,7 +78,9 @@ func Parse(text string) []*Dice {
 				}
 				dice.Number = num
 			case "sides":
-				hasOneDice = true
+				if m[i] != "" {
+					hasOneDice = true
+				}
 				if m[i] == "" {
 					dice.Sides = 6
 				} else if m[i] == "f" || m[i] == "F" {
@@ -126,11 +129,21 @@ func Parse(text string) []*Dice {
 		rolls = append(rolls, dice)
 	}
 	if !hasOneDice {
-		rolls = append(rolls, &Dice{
-			Operator: Subtract,
-			Number:   1,
-			Sides:    100,
-		})
+		if len(rolls) > 0 {
+			// if there is another number there, just subtract.
+			rolls = append(rolls, &Dice{
+				Operator: Subtract,
+				Number:   1,
+				Sides:    100,
+			})
+		} else {
+			// Or roll a default 1d100 dice.
+			rolls = append(rolls, &Dice{
+				Operator: Add,
+				Number:   1,
+				Sides:    100,
+			})
+		}
 	}
 	return rolls
 }

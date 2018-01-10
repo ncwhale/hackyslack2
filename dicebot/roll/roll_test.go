@@ -6,17 +6,25 @@ import (
 
 var ParseTests = []RollTest{
 	{"2d6", []Dice{{Operator: Add, Number: 2, Sides: 6}}},
-	{"", []Dice{{Operator: Add, Number: 2, Sides: 6}}},
-	{"blah", []Dice{{Operator: Add, Number: 2, Sides: 6}}},
-	{"2", []Dice{{Operator: Add, Number: 2, Sides: 1}}},
+	{"", []Dice{{Operator: Add, Number: 1, Sides: 100}}},
+	{"blah", []Dice{{Operator: Add, Number: 1, Sides: 100}}},
 	{"0d0", []Dice{{Operator: Add, Number: 1, Sides: 1}}},
-	{"d", []Dice{{Operator: Add, Number: 2, Sides: 6}}},
+	{"d", []Dice{{Operator: Add, Number: 1, Sides: 100}}},
 	{"d%", []Dice{{Operator: Add, Number: 1, Sides: 100}}},
 	{"2d%", []Dice{{Operator: Add, Number: 2, Sides: 100}}},
 	{"0d1", []Dice{{Operator: Add, Number: 1, Sides: 1}}},
 	{"1d6!", []Dice{{Operator: Add, Number: 1, Sides: 6, Explode: true}}},
 	{"4f", []Dice{{Operator: Add, Number: 4, Sides: 3, Fudge: true}}},
 	{"4df", []Dice{{Operator: Add, Number: 4, Sides: 3, Fudge: true}}},
+	{"999d9999", []Dice{{Operator: Add, Number: 100, Sides: 1000}}},
+	{"2d6×5", []Dice{
+		{Operator: Add, Number: 2, Sides: 6},
+		{Operator: Multiply, Number: 5, Sides: 1},
+	}},
+	{"Skill=50", []Dice{
+		{Operator: Add, Number: 50, Sides: 1},
+		{Operator: Subtract, Number: 1, Sides: 100},
+	}},
 	{"1d20-1", []Dice{
 		{Operator: Add, Number: 1, Sides: 20},
 		{Operator: Subtract, Number: 1, Sides: 1},
@@ -86,13 +94,31 @@ func TestRoll(t *testing.T) {
 			}
 			for i := 0; i < 10; i++ {
 				result.Roll()
-				if !result.Fudge && result.Total < result.Number {
+				if !result.Fudge && result.Keep == 0 && result.Total < result.Number {
 					t.Error(test.Text, "Rolled too low", *result)
 				}
-				if !result.Explode && result.Total > result.Number*result.Sides {
+				if !result.Explode && result.Keep == 0 && result.Total > result.Number*result.Sides {
 					t.Error(test.Text, "Rolled too high", *result)
 				}
 			}
 		}
+	}
+}
+
+func TestDiceGenerate(t *testing.T) {
+	if DiceGenerate(1) < 1 {
+		t.Error("This roll should be 1")
+	}
+
+	if DiceGenerate(1000) > 1000 {
+		t.Error("This roll should less than 1000")
+	}
+
+	if DiceGenerate(0) != 0 {
+		t.Error("This roll should be 0")
+	}
+
+	if DiceGenerate(-1) != 0 {
+		t.Error("This roll should be 0")
 	}
 }
